@@ -92,11 +92,20 @@ export class PrivacyPreservingLearner {
       if (typeof record === 'object' && record !== null) {
         const generalizedRecord = { ...record };
         
-        // 只对特定字段进行泛化，保留邮箱、电话号码、年龄和收入的原始数据
+        // 对需要保护的敏感字段进行泛化
+        // 采用不同的策略：
+        // 1. 功能性字段（email, phone等）保持原始数据用于UI显示
+        // 2. 统计性字段（age, income等）可以适度泛化用于模型训练
+        // 3. 高度敏感字段（身份证等）严格保护
+
+        // location字段进行泛化（保留城市级别信息）
         if (record.location !== undefined) {
           generalizedRecord.location = this.generalizeLocation(record.location);
         }
-        // 注意：不处理age、income、phone和email字段，保持原始数据用于建议显示
+        // 有身份证字段，应该进行严格泛化
+        if (record.idCard !== undefined) {
+          generalizedRecord.idCard = this.generalizeIdCard(record.idCard);
+        }
         
         return generalizedRecord;
       }
@@ -182,6 +191,19 @@ export class PrivacyPreservingLearner {
       return `${hiddenUsername}@${domain}`;
     }
     return email;
+  }
+  
+  /**
+   * 身份证号泛化（示例）
+   * @param {any} idCard - 身份证号
+   * @returns {string|any} 泛化后的身份证号
+   */
+  generalizeIdCard(idCard) {
+    if (typeof idCard === 'string' && idCard.length >= 18) {
+      // 保留前6位（地区码）和后1位（校验码），中间用*代替
+      return idCard.substring(0, 6) + '**********' + idCard.substring(17);
+    }
+    return idCard;
   }
   
   /**
