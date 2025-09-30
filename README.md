@@ -2,6 +2,11 @@
 
 一个基于本地机器学习的前端库，能够学习用户的表单填写习惯，在用户输入时提供智能预测和自动完成，**所有数据处理均在本地进行，确保隐私安全**。
 
+## 在线示例
+
+- [基础示例](https://github.com/AGitCalledHangFeng/smart-form-predictor/blob/main/example/index.html)
+- [Element UI 集成示例](https://github.com/AGitCalledHangFeng/smart-form-predictor/blob/main/example/element-ui-example.html)
+
 ## 核心特性
 
 - **完全本地化** - 所有数据处理在浏览器完成
@@ -99,7 +104,7 @@ Smart Form Predictor 设计为与各种UI组件库兼容，包括 Element UI、A
 
 ### Element UI 集成示例
 
-请查看 [example/element-ui-example.html](example/element-ui-example.html) 了解如何将 Smart Form Predictor 与 Element UI 组件集成。
+请查看 [Element UI 集成示例](https://github.com/AGitCalledHangFeng/smart-form-predictor/blob/main/example/element-ui-example.html) 了解如何将 Smart Form Predictor 与 Element UI 组件集成。
 
 关键步骤：
 1. 为每个表单字段添加事件监听器（input、focus、blur）

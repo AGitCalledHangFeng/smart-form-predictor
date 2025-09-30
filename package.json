@@ -33,6 +33,14 @@
   "author": "fh",
   "license": "MIT",
   "description": "A smart form prediction library based on local machine learning that learns user form filling habits and provides intelligent predictions and auto-completion while ensuring privacy security.",
+  "homepage": "https://github.com/AGitCalledHangFeng/smart-form-predictor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AGitCalledHangFeng/smart-form-predictor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AGitCalledHangFeng/smart-form-predictor/issues"
+  },
   "devDependencies": {
     "rollup": "^2.79.2",
     "serve": "^14.2.0"
