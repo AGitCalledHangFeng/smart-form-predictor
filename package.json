@@ -1,6 +1,6 @@
 {
   "name": "smart-form-predictor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "dist/smart-form-predictor.cjs.js",
   "module": "dist/smart-form-predictor.esm.js",
