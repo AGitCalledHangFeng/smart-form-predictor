@@ -1,0 +1,40 @@
+{
+  "name": "smart-form-predictor",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/smart-form-predictor.cjs.js",
+  "module": "dist/smart-form-predictor.esm.js",
+  "unpkg": "dist/smart-form-predictor.umd.js",
+  "jsdelivr": "dist/smart-form-predictor.umd.js",
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/smart-form-predictor.esm.js",
+      "require": "./dist/smart-form-predictor.cjs.js",
+      "default": "./dist/smart-form-predictor.umd.js"
+    }
+  },
+  "scripts": {
+    "test": "node test/basic.test.js",
+    "start": "npx serve",
+    "build": "npx rollup -c",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "form",
+    "prediction",
+    "machine-learning",
+    "privacy",
+    "autocomplete"
+  ],
+  "author": "fh",
+  "license": "MIT",
+  "description": "A smart form prediction library based on local machine learning that learns user form filling habits and provides intelligent predictions and auto-completion while ensuring privacy security.",
+  "devDependencies": {
+    "rollup": "^2.79.2",
+    "serve": "^14.2.0"
+  }
+}

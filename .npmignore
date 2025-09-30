@@ -1,0 +1,8 @@
+# Ignore example directory
+example/
+
+# Ignore rollup config
+rollup.config.js
+
+# Ignore gitignore
+.gitignore

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Form Predictor 演示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .suggestion-container {
+            position: relative;
+            margin-top: 5px;
+        }
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .prediction-highlight {
+            background-color: #fff9c4;
+        }
+        .status-bar {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            flex: 1;
+            min-width: 200px;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .feature-title {
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ffc107;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #ff9800;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        .test-data-section {
+            background: #f1f8e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .test-data-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .test-btn {
+            background: #8bc34a;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-btn:hover {
+            background: #7cb342;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Form Predictor 演示</h1>
+    <p class="subtitle">智能表单预测库 - 基于本地机器学习的表单自动完成工具</p>
+    
+    <div class="instructions">
+        <h3>使用说明</h3>
+        <ol>
+            <li>开始填写表单，观察智能预测功能</li>
+            <li>填写完一个表单并提交，数据将用于训练预测模型</li>
+            <li>再次填写表单，观察预测建议如何基于之前的学习进行改进</li>
+            <li>尝试使用"填充测试数据"按钮快速填充示例数据</li>
+        </ol>
+    </div>
+    
+    <div class="status-bar">
+        <div class="status-title">智能表单预测器状态</div>
+        <div id="status-text">正在初始化...</div>
+    </div>
+    
+    <div class="test-data-section">
+        <h3>测试数据</h3>
+        <p>点击以下按钮快速填充测试数据：</p>
+        <div class="test-data-buttons">
+            <button class="test-btn" onclick="window.fillTestData('张三')">填充张三的数据</button>
+            <button class="test-btn" onclick="window.fillTestData('李四')">填充李四的数据</button>
+            <button class="test-btn" onclick="window.fillTestData('王五')">填充王五的数据</button>
+            <button class="test-btn" onclick="window.clearForm()">清空表单</button>
+        </div>
+    </div>
+    
+    <div class="form-container">
+        <form id="registration-form">
+            <div class="form-group">
+                <label for="fullName">姓名 (Full Name)</label>
+                <div class="suggestion-container">
+                    <input type="text" id="fullName" name="fullName" required>
+                    <div class="suggestions" id="fullName-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">邮箱 (Email)</label>
+                <div class="suggestion-container">
+                    <input type="email" id="email" name="email" required>
+                    <div class="suggestions" id="email-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">电话 (Phone)</label>
+                <div class="suggestion-container">
+                    <input type="tel" id="phone" name="phone">
+                    <div class="suggestions" id="phone-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="company">公司 (Company)</label>
+                <div class="suggestion-container">
+                    <input type="text" id="company" name="company">
+                    <div class="suggestions" id="company-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">职位 (Title)</label>
+                <div class="suggestion-container">
+                    <input type="text" id="title" name="title">
+                    <div class="suggestions" id="title-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="address">地址 (Address)</label>
+                <div class="suggestion-container">
+                    <textarea id="address" name="address" rows="3"></textarea>
+                    <div class="suggestions" id="address-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="city">城市 (City)</label>
+                <div class="suggestion-container">
+                    <input type="text" id="city" name="city">
+                    <div class="suggestions" id="city-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="country">国家 (Country)</label>
+                <div class="suggestion-container">
+                    <select id="country" name="country">
+                        <option value="">请选择国家</option>
+                        <option value="china">中国</option>
+                        <option value="usa">美国</option>
+                        <option value="uk">英国</option>
+                        <option value="japan">日本</option>
+                        <option value="germany">德国</option>
+                    </select>
+                    <div class="suggestions" id="country-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthdate">出生日期 (Birthdate)</label>
+                <div class="suggestion-container">
+                    <input type="date" id="birthdate" name="birthdate">
+                    <div class="suggestions" id="birthdate-suggestions"></div>
+                </div>
+            </div>
+            
+            <button type="submit">提交表单</button>
+        </form>
+    </div>
+    
+    <div class="feature-list">
+        <div class="feature-card">
+            <div class="feature-title">隐私保护</div>
+            <p>所有数据处理均在浏览器本地进行，您的个人信息永远不会发送到任何服务器。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-title">智能学习</div>
+            <p>系统会学习您的填写习惯，随着时间推移提供更准确的预测建议。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-title">跨字段关联</div>
+            <p>智能识别字段间的关联关系，例如姓名与邮箱的关联。</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SmartFormPredictor } from '/dist/smart-form-predictor.esm.js';
+        
+        // 全局变量
+        let predictor = null;
+        let suggestionElements = {};
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 初始化智能表单预测器
+                predictor = await SmartFormPredictor.init({
+                    forms: '#registration-form',
+                    learning: true,
+                    privacy: {
+                        localOnly: true,
+                        autoForget: true,
+                        anonymize: true
+                    },
+                    prediction: {
+                        confidenceThreshold: 0.5, // 降低阈值以便更容易看到预测效果
+                        maxSuggestions: 5,
+                        autoComplete: 'smart'
+                    },
+                    ui: {
+                        highlightPredictions: true,
+                        showConfidence: false,
+                        animation: 'smooth'
+                    }
+                });
+                
+                document.getElementById('status-text').textContent = '智能表单预测器已就绪！开始填写表单以体验智能预测功能。';
+                console.log('SmartFormPredictor initialized successfully');
+                
+                // 添加表单提交事件监听器
+                const form = document.getElementById('registration-form');
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    const data = {};
+                    for (const [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    console.log('Form submitted with data:', data);
+                    
+                    // 从提交中学习
+                    predictor.learnFromSubmission(data);
+                    
+                    document.getElementById('status-text').textContent = '表单提交成功！数据已用于训练预测模型。';
+                    setTimeout(() => {
+                        document.getElementById('status-text').textContent = '智能表单预测器已就绪！继续填写表单以体验改进的预测功能。';
+                    }, 3000);
+                    
+                    alert('表单提交成功！数据已用于训练预测模型。');
+                });
+                
+                // 为每个输入字段添加事件监听器
+                const inputs = form.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    // 获取对应的建议容器
+                    const suggestionDiv = document.getElementById(`${input.id}-suggestions`);
+                    if (suggestionDiv) {
+                        suggestionElements[input.id] = suggestionDiv;
+                        
+                        // 添加输入事件监听器
+                        input.addEventListener('input', (event) => {
+                            showSuggestions(event.target);
+                        });
+                        
+                        // 添加焦点事件监听器
+                        input.addEventListener('focus', (event) => {
+                            showSuggestions(event.target);
+                        });
+                        
+                        // 添加失去焦点事件监听器
+                        input.addEventListener('blur', (event) => {
+                            // 延迟隐藏建议，以便点击建议时不会立即消失
+                            setTimeout(() => {
+                                if (suggestionElements[input.id]) {
+                                    suggestionElements[input.id].style.display = 'none';
+                                }
+                            }, 200);
+                        });
+                        
+                        // 监听来自预测器的建议事件
+                        input.addEventListener('smart-form-suggestion', (event) => {
+                            const { prediction } = event.detail;
+                            if (prediction && prediction.alternatives && prediction.alternatives.length > 0) {
+                                showSuggestionsWithAlternatives(input, prediction.alternatives);
+                            }
+                        });
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Failed to initialize SmartFormPredictor:', error);
+                document.getElementById('status-text').textContent = '初始化失败: ' + error.message;
+            }
+        });
+        
+        // 显示建议
+        async function showSuggestions(input) {
+            if (!predictor || input.value.length < 1) {
+                if (suggestionElements[input.id]) {
+                    suggestionElements[input.id].style.display = 'none';
+                }
+                return;
+            }
+            
+            try {
+                // 获取建议
+                const suggestions = predictor.getSuggestions(input.name, input.value);
+                
+                if (suggestions && suggestions.length > 0) {
+                    const suggestionDiv = suggestionElements[input.id];
+                    if (suggestionDiv) {
+                        // 清空现有建议
+                        suggestionDiv.innerHTML = '';
+                        
+                        // 添加建议项
+                        suggestions.forEach(suggestion => {
+                            const item = document.createElement('div');
+                            item.className = 'suggestion-item';
+                            item.textContent = suggestion;
+                            item.addEventListener('click', () => {
+                                input.value = suggestion;
+                                suggestionDiv.style.display = 'none';
+                            });
+                            suggestionDiv.appendChild(item);
+                        });
+                        
+                        // 显示建议
+                        suggestionDiv.style.display = 'block';
+                    }
+                } else {
+                    if (suggestionElements[input.id]) {
+                        suggestionElements[input.id].style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting suggestions:', error);
+            }
+        }
+        
+        // 使用替代建议显示建议
+        function showSuggestionsWithAlternatives(input, alternatives) {
+            if (!predictor || alternatives.length < 1) {
+                if (suggestionElements[input.id]) {
+                    suggestionElements[input.id].style.display = 'none';
+                }
+                return;
+            }
+            
+            const suggestionDiv = suggestionElements[input.id];
+            if (suggestionDiv) {
+                // 清空现有建议
+                suggestionDiv.innerHTML = '';
+                
+                // 添加建议项
+                alternatives.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = suggestion;
+                    item.addEventListener('click', () => {
+                        input.value = suggestion;
+                        suggestionDiv.style.display = 'none';
+                    });
+                    suggestionDiv.appendChild(item);
+                });
+                
+                // 显示建议
+                suggestionDiv.style.display = 'block';
+            }
+        }
+        
+        // 将函数添加到window对象，使其可以在全局作用域中访问
+        window.fillTestData = function(name) {
+            const dataMap = {
+                '张三': {
+                    fullName: '张三',
+                    email: 'zhangsan@example.com',
+                    phone: '13800138000',
+                    company: '科技有限公司',
+                    title: '软件工程师',
+                    address: '北京市朝阳区某某街道123号',
+                    city: '北京',
+                    country: 'china',
+                    birthdate: '1990-01-01'
+                },
+                '李四': {
+                    fullName: '李四',
+                    email: 'lisi@example.com',
+                    phone: '13900139000',
+                    company: '创新科技',
+                    title: '产品经理',
+                    address: '上海市浦东新区某某路456号',
+                    city: '上海',
+                    country: 'china',
+                    birthdate: '1985-05-15'
+                },
+                '王五': {
+                    fullName: '王五',
+                    email: 'wangwu@example.com',
+                    phone: '13700137000',
+                    company: '未来集团',
+                    title: '设计师',
+                    address: '广州市天河区某某大道789号',
+                    city: '广州',
+                    country: 'china',
+                    birthdate: '1992-12-20'
+                }
+            };
+            
+            const data = dataMap[name] || dataMap['张三'];
+            
+            for (const [key, value] of Object.entries(data)) {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.value = value;
+                }
+            }
+            
+            document.getElementById('status-text').textContent = `已填充 ${name} 的测试数据。现在提交表单来训练模型！`;
+        };
+        
+        // 清空表单
+        window.clearForm = function() {
+            const form = document.getElementById('registration-form');
+            form.reset();
+            
+            // 隐藏所有建议
+            Object.values(suggestionElements).forEach(element => {
+                element.style.display = 'none';
+            });
+            
+            document.getElementById('status-text').textContent = '表单已清空。开始填写新数据！';
+        };
+    </script>
+</body>
+</html>

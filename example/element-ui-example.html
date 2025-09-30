@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Form Predictor with Element UI 示例</title>
+    <!-- 引入 Element UI 样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .el-form-item {
+            margin-bottom: 20px;
+        }
+        .suggestion-container {
+            position: relative;
+            width: 100%;
+        }
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .status-bar {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .instructions {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ffc107;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #ff9800;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        .test-data-section {
+            background: #f1f8e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .test-data-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .test-btn {
+            background: #8bc34a;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-btn:hover {
+            background: #7cb342;
+        }
+        .integration-notes {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .integration-notes h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .code-block {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Form Predictor with Element UI 示例</h1>
+    <p class="subtitle">智能表单预测库 - 与Element UI集成示例</p>
+    
+    <div class="instructions">
+        <h3>使用说明</h3>
+        <ol>
+            <li>开始填写表单，观察智能预测功能</li>
+            <li>填写完一个表单并提交，数据将用于训练预测模型</li>
+            <li>再次填写表单，观察预测建议如何基于之前的学习进行改进</li>
+            <li>尝试使用"填充测试数据"按钮快速填充示例数据</li>
+        </ol>
+    </div>
+    
+    <div class="status-bar">
+        <div class="status-title">智能表单预测器状态</div>
+        <div id="status-text">正在初始化...</div>
+    </div>
+    
+    <div class="test-data-section">
+        <h3>测试数据</h3>
+        <p>点击以下按钮快速填充测试数据：</p>
+        <div class="test-data-buttons">
+            <button class="test-btn" onclick="window.fillTestData('张三')">填充张三的数据</button>
+            <button class="test-btn" onclick="window.fillTestData('李四')">填充李四的数据</button>
+            <button class="test-btn" onclick="window.fillTestData('王五')">填充王五的数据</button>
+            <button class="test-btn" onclick="window.clearForm()">清空表单</button>
+        </div>
+    </div>
+    
+    <div class="form-container">
+        <div id="app">
+            <el-form ref="form" :model="form" label-width="120px" id="registration-form">
+                <el-form-item label="姓名">
+                    <div class="suggestion-container">
+                        <el-input 
+                            v-model="form.fullName" 
+                            name="fullName" 
+                            id="fullName"
+                            @input="onInput('fullName')"
+                            @focus="onFocus('fullName')"
+                            @blur="onBlur('fullName')">
+                        </el-input>
+                        <div class="suggestions" id="fullName-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="邮箱">
+                    <div class="suggestion-container">
+                        <el-input 
+                            v-model="form.email" 
+                            name="email" 
+                            id="email"
+                            @input="onInput('email')"
+                            @focus="onFocus('email')"
+                            @blur="onBlur('email')">
+                        </el-input>
+                        <div class="suggestions" id="email-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="电话">
+                    <div class="suggestion-container">
+                        <el-input 
+                            v-model="form.phone" 
+                            name="phone" 
+                            id="phone"
+                            @input="onInput('phone')"
+                            @focus="onFocus('phone')"
+                            @blur="onBlur('phone')">
+                        </el-input>
+                        <div class="suggestions" id="phone-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="公司">
+                    <div class="suggestion-container">
+                        <el-input 
+                            v-model="form.company" 
+                            name="company" 
+                            id="company"
+                            @input="onInput('company')"
+                            @focus="onFocus('company')"
+                            @blur="onBlur('company')">
+                        </el-input>
+                        <div class="suggestions" id="company-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="职位">
+                    <div class="suggestion-container">
+                        <el-input 
+                            v-model="form.title" 
+                            name="title" 
+                            id="title"
+                            @input="onInput('title')"
+                            @focus="onFocus('title')"
+                            @blur="onBlur('title')">
+                        </el-input>
+                        <div class="suggestions" id="title-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="地址">
+                    <div class="suggestion-container">
+                        <el-input 
+                            type="textarea" 
+                            v-model="form.address" 
+                            name="address" 
+                            id="address"
+                            @input="onInput('address')"
+                            @focus="onFocus('address')"
+                            @blur="onBlur('address')">
+                        </el-input>
+                        <div class="suggestions" id="address-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="城市">
+                    <div class="suggestion-container">
+                        <el-input 
+                            v-model="form.city" 
+                            name="city" 
+                            id="city"
+                            @input="onInput('city')"
+                            @focus="onFocus('city')"
+                            @blur="onBlur('city')">
+                        </el-input>
+                        <div class="suggestions" id="city-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="国家">
+                    <div class="suggestion-container">
+                        <el-select 
+                            v-model="form.country" 
+                            name="country" 
+                            id="country"
+                            @focus="onFocus('country')"
+                            @blur="onBlur('country')">
+                            <el-option label="请选择国家" value=""></el-option>
+                            <el-option label="中国" value="china"></el-option>
+                            <el-option label="美国" value="usa"></el-option>
+                            <el-option label="英国" value="uk"></el-option>
+                            <el-option label="日本" value="japan"></el-option>
+                            <el-option label="德国" value="germany"></el-option>
+                        </el-select>
+                        <div class="suggestions" id="country-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="出生日期">
+                    <div class="suggestion-container">
+                        <el-date-picker 
+                            v-model="form.birthdate" 
+                            type="date" 
+                            name="birthdate" 
+                            id="birthdate"
+                            value-format="yyyy-MM-dd"
+                            @focus="onFocus('birthdate')"
+                            @blur="onBlur('birthdate')">
+                        </el-date-picker>
+                        <div class="suggestions" id="birthdate-suggestions"></div>
+                    </div>
+                </el-form-item>
+                
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmit">提交表单</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+
+    <div class="integration-notes">
+        <h3>集成说明</h3>
+        <p>此示例展示了如何将 Smart Form Predictor 与 Element UI 组件集成：</p>
+        <ol>
+            <li>为每个表单字段包装在 suggestion-container 中</li>
+            <li>为每个字段添加对应的建议容器 (suggestions)</li>
+            <li>为 Element UI 组件添加适当的事件监听器 (@input, @focus, @blur)</li>
+            <li>监听 smart-form-suggestion 自定义事件以接收实时预测建议</li>
+        </ol>
+        
+        <h4>关键代码示例：</h4>
+        <div class="code-block">
+// 监听自定义事件以获取实时预测建议
+field.addEventListener('smart-form-suggestion', (event) => {
+  const { prediction } = event.detail;
+  if (prediction && prediction.alternatives && prediction.alternatives.length > 0) {
+    this.showSuggestionsWithAlternatives(fieldName, prediction.alternatives);
+  }
+});
+
+// 获取建议并显示
+const suggestions = predictor.getSuggestions(fieldName, fieldValue);
+        </div>
+        
+        <p>通过这种方式，Smart Form Predictor 可以与任何 UI 组件库集成，而不仅限于 Element UI。</p>
+    </div>
+
+    <!-- 引入 Vue 和 Element UI -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script type="module">
+        import { SmartFormPredictor } from '/dist/smart-form-predictor.esm.js';
+        
+        // 全局变量
+        let predictor = null;
+        let suggestionElements = {};
+        
+        // 创建 Vue 实例
+        const app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    form: {
+                        fullName: '',
+                        email: '',
+                        phone: '',
+                        company: '',
+                        title: '',
+                        address: '',
+                        city: '',
+                        country: '',
+                        birthdate: ''
+                    }
+                }
+            },
+            mounted() {
+                this.initSmartFormPredictor();
+            },
+            methods: {
+                async initSmartFormPredictor() {
+                    try {
+                        // 初始化智能表单预测器
+                        predictor = await SmartFormPredictor.init({
+                            forms: '#registration-form',
+                            learning: true,
+                            privacy: {
+                                localOnly: true,
+                                autoForget: true,
+                                anonymize: true
+                            },
+                            prediction: {
+                                confidenceThreshold: 0.5, // 降低阈值以便更容易看到预测效果
+                                maxSuggestions: 5,
+                                autoComplete: 'smart'
+                            },
+                            ui: {
+                                highlightPredictions: true,
+                                showConfidence: false,
+                                animation: 'smooth'
+                            }
+                        });
+                        
+                        document.getElementById('status-text').textContent = '智能表单预测器已就绪！开始填写表单以体验智能预测功能。';
+                        console.log('SmartFormPredictor initialized successfully');
+                        
+                        // 获取所有建议容器元素
+                        const fieldNames = ['fullName', 'email', 'phone', 'company', 'title', 'address', 'city', 'country', 'birthdate'];
+                        fieldNames.forEach(fieldName => {
+                            const suggestionDiv = document.getElementById(`${fieldName}-suggestions`);
+                            if (suggestionDiv) {
+                                suggestionElements[fieldName] = suggestionDiv;
+                            }
+                        });
+                        
+                        // 为表单添加提交事件监听器
+                        const form = document.getElementById('registration-form');
+                        form.addEventListener('submit', (event) => {
+                            event.preventDefault();
+                            this.onSubmit();
+                        });
+                        
+                        // 为每个字段添加事件监听器
+                        fieldNames.forEach(fieldName => {
+                            const field = document.getElementById(fieldName);
+                            if (field) {
+                                // 监听来自预测器的建议事件
+                                field.addEventListener('smart-form-suggestion', (event) => {
+                                    const { prediction } = event.detail;
+                                    if (prediction && prediction.alternatives && prediction.alternatives.length > 0) {
+                                        this.showSuggestionsWithAlternatives(fieldName, prediction.alternatives);
+                                    }
+                                });
+                            }
+                        });
+                        
+                    } catch (error) {
+                        console.error('Failed to initialize SmartFormPredictor:', error);
+                        document.getElementById('status-text').textContent = '初始化失败: ' + error.message;
+                    }
+                },
+                
+                onInput(fieldName) {
+                    // 添加防抖处理，避免过于频繁的建议请求
+                    clearTimeout(this.inputDebounceTimer);
+                    this.inputDebounceTimer = setTimeout(() => {
+                        this.showSuggestions(fieldName);
+                    }, 300);
+                },
+                
+                onFocus(fieldName) {
+                    // 焦点进入时显示建议
+                    this.showSuggestions(fieldName);
+                },
+                
+                onBlur(fieldName) {
+                    // 延迟隐藏建议，以便点击建议时不会立即消失
+                    setTimeout(() => {
+                        if (suggestionElements[fieldName]) {
+                            suggestionElements[fieldName].style.display = 'none';
+                        }
+                    }, 200);
+                },
+                
+                async showSuggestions(fieldName) {
+                    if (!predictor) return;
+                    
+                    const fieldValue = this.form[fieldName];
+                    if (!fieldValue || fieldValue.length < 1) {
+                        if (suggestionElements[fieldName]) {
+                            suggestionElements[fieldName].style.display = 'none';
+                        }
+                        return;
+                    }
+                    
+                    try {
+                        // 获取建议
+                        const suggestions = predictor.getSuggestions(fieldName, fieldValue);
+                        
+                        if (suggestions && suggestions.length > 0) {
+                            const suggestionDiv = suggestionElements[fieldName];
+                            if (suggestionDiv) {
+                                // 清空现有建议
+                                suggestionDiv.innerHTML = '';
+                                
+                                // 添加建议项
+                                suggestions.forEach(suggestion => {
+                                    const item = document.createElement('div');
+                                    item.className = 'suggestion-item';
+                                    item.textContent = suggestion;
+                                    item.addEventListener('click', () => {
+                                        // 更新Vue数据模型
+                                        this.form[fieldName] = suggestion;
+                                        // 隐藏建议列表
+                                        suggestionDiv.style.display = 'none';
+                                    });
+                                    suggestionDiv.appendChild(item);
+                                });
+                                
+                                // 显示建议
+                                suggestionDiv.style.display = 'block';
+                            }
+                        } else {
+                            if (suggestionElements[fieldName]) {
+                                suggestionElements[fieldName].style.display = 'none';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error getting suggestions:', error);
+                    }
+                },
+                
+                showSuggestionsWithAlternatives(fieldName, alternatives) {
+                    if (!predictor ||
+                        !alternatives ||
+                        alternatives.length < 1) {
+                        if (suggestionElements[fieldName]) {
+                            suggestionElements[fieldName].style.display = 'none';
+                        }
+                        return;
+                    }
+                    
+                    const suggestionDiv = suggestionElements[fieldName];
+                    if (suggestionDiv) {
+                        // 清空现有建议
+                        suggestionDiv.innerHTML = '';
+                        
+                        // 添加建议项
+                        alternatives.forEach(suggestion => {
+                            const item = document.createElement('div');
+                            item.className = 'suggestion-item';
+                            item.textContent = suggestion;
+                            item.addEventListener('click', () => {
+                                // 更新Vue数据模型
+                                this.form[fieldName] = suggestion;
+                                // 隐藏建议列表
+                                suggestionDiv.style.display = 'none';
+                            });
+                            suggestionDiv.appendChild(item);
+                        });
+                        
+                        // 显示建议
+                        suggestionDiv.style.display = 'block';
+                    }
+                },
+                
+                onSubmit() {
+                    console.log('Form submitted with data:', this.form);
+                    
+                    // 数据验证
+                    if (!this.form.fullName) {
+                        this.$message({
+                            message: '请输入姓名',
+                            type: 'warning'
+                        });
+                        return;
+                    }
+                    
+                    // 从提交中学习
+                    predictor.learnFromSubmission(this.form);
+                    
+                    document.getElementById('status-text').textContent = '表单提交成功！数据已用于训练预测模型。';
+                    setTimeout(() => {
+                        document.getElementById('status-text').textContent = '智能表单预测器已就绪！继续填写表单以体验改进的预测功能。';
+                    }, 3000);
+                    
+                    this.$message({
+                        message: '表单提交成功！数据已用于训练预测模型。',
+                        type: 'success'
+                    });
+                }
+            }
+        });
+        
+        // 将函数添加到window对象，使其可以在全局作用域中访问
+        window.fillTestData = function(name) {
+            const dataMap = {
+                '张三': {
+                    fullName: '张三',
+                    email: 'zhangsan@example.com',
+                    phone: '13800138000',
+                    company: '科技有限公司',
+                    title: '软件工程师',
+                    address: '北京市朝阳区某某街道123号',
+                    city: '北京',
+                    country: 'china',
+                    birthdate: '1990-01-01'
+                },
+                '李四': {
+                    fullName: '李四',
+                    email: 'lisi@example.com',
+                    phone: '13900139000',
+                    company: '创新科技',
+                    title: '产品经理',
+                    address: '上海市浦东新区某某路456号',
+                    city: '上海',
+                    country: 'china',
+                    birthdate: '1985-05-15'
+                },
+                '王五': {
+                    fullName: '王五',
+                    email: 'wangwu@example.com',
+                    phone: '13700137000',
+                    company: '未来集团',
+                    title: '设计师',
+                    address: '广州市天河区某某大道789号',
+                    city: '广州',
+                    country: 'china',
+                    birthdate: '1992-12-20'
+                }
+            };
+            
+            const data = dataMap[name] || dataMap['张三'];
+            
+            // 更新Vue实例的数据
+            for (const [key, value] of Object.entries(data)) {
+                if (app.form.hasOwnProperty(key)) {
+                    app.form[key] = value;
+                }
+            }
+            
+            document.getElementById('status-text').textContent = `已填充 ${name} 的测试数据。现在提交表单来训练模型！`;
+        };
+        
+        // 清空表单
+        window.clearForm = function() {
+            // 重置Vue实例的数据
+            app.form = {
+                fullName: '',
+                email: '',
+                phone: '',
+                company: '',
+                title: '',
+                address: '',
+                city: '',
+                country: '',
+                birthdate: ''
+            };
+            
+            // 隐藏所有建议
+            Object.values(suggestionElements).forEach(element => {
+                element.style.display = 'none';
+            });
+            
+            document.getElementById('status-text').textContent = '表单已清空。开始填写新数据！';
+        };
+    </script>
+</body>
+</html>
