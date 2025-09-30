@@ -97,12 +97,8 @@ export class PrivacyPreservingLearner {
         // 1. 功能性字段（email, phone等）保持原始数据用于UI显示
         // 2. 统计性字段（age, income等）可以适度泛化用于模型训练
         // 3. 高度敏感字段（身份证等）严格保护
-
-        // location字段进行泛化（保留城市级别信息）
-        if (record.location !== undefined) {
-          generalizedRecord.location = this.generalizeLocation(record.location);
-        }
-        // 有身份证字段，应该进行严格泛化
+        
+        // 身份证字段进行严格泛化
         if (record.idCard !== undefined) {
           generalizedRecord.idCard = this.generalizeIdCard(record.idCard);
         }
@@ -142,23 +138,6 @@ export class PrivacyPreservingLearner {
       return 'very-high';
     }
     return income;
-  }
-  
-  /**
-   * 位置泛化
-   * @param {any} location - 位置
-   * @returns {string|any} 泛化后的位置
-   */
-  generalizeLocation(location) {
-    if (typeof location === 'string') {
-      // 只保留城市级别信息，移除具体地址
-      const parts = location.split(',');
-      if (parts.length > 1) {
-        return parts[0].trim(); // 只返回城市名
-      }
-      return location;
-    }
-    return location;
   }
   
   /**
@@ -212,7 +191,7 @@ export class PrivacyPreservingLearner {
    * @returns {Array} 更新后的数据
    */
   updateLocalModel(data) {
-    // 在实际实现中，这里会更新本地预测模型
+    // TODO: 在实际实现中，这里会更新本地预测模型
     // 简化实现，直接返回数据
     console.log('Updating local model with privacy-preserving data');
     return data;

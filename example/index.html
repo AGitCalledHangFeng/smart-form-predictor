@@ -173,6 +173,34 @@
         .test-btn:hover {
             background: #7cb342;
         }
+        .privacy-explanation {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .privacy-explanation h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .privacy-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .privacy-level {
+            padding: 15px;
+            border-radius: 6px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .privacy-level h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .privacy-level p {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -186,6 +214,7 @@
             <li>填写完一个表单并提交，数据将用于训练预测模型</li>
             <li>再次填写表单，观察预测建议如何基于之前的学习进行改进</li>
             <li>尝试使用"填充测试数据"按钮快速填充示例数据</li>
+            <li>注意观察不同隐私保护级别的字段处理方式</li>
         </ol>
     </div>
     
@@ -205,6 +234,24 @@
         </div>
     </div>
     
+    <div class="privacy-explanation">
+        <h3>隐私保护分级说明</h3>
+        <div class="privacy-levels">
+            <div class="privacy-level">
+                <h4>级别1: 功能性字段 (直接显示)</h4>
+                <p>邮箱、电话等直接影响用户体验的字段保持原始数据用于预测建议显示</p>
+            </div>
+            <div class="privacy-level">
+                <h4>级别2: 统计性字段 (适度泛化)</h4>
+                <p>年龄、收入等统计性字段可以适度泛化用于模型训练</p>
+            </div>
+            <div class="privacy-level">
+                <h4>级别3: 高度敏感字段 (严格保护)</h4>
+                <p>身份证号等高度敏感信息进行严格泛化或不存储</p>
+            </div>
+        </div>
+    </div>
+    
     <div class="form-container">
         <form id="registration-form">
             <div class="form-group">
@@ -216,7 +263,7 @@
             </div>
             
             <div class="form-group">
-                <label for="email">邮箱 (Email)</label>
+                <label for="email">邮箱 (Email) - 功能性字段</label>
                 <div class="suggestion-container">
                     <input type="email" id="email" name="email" required>
                     <div class="suggestions" id="email-suggestions"></div>
@@ -224,10 +271,34 @@
             </div>
             
             <div class="form-group">
-                <label for="phone">电话 (Phone)</label>
+                <label for="phone">电话 (Phone) - 功能性字段</label>
                 <div class="suggestion-container">
                     <input type="tel" id="phone" name="phone">
                     <div class="suggestions" id="phone-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="age">年龄 (Age) - 统计性字段</label>
+                <div class="suggestion-container">
+                    <input type="number" id="age" name="age">
+                    <div class="suggestions" id="age-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="income">年收入 (Annual Income) - 统计性字段</label>
+                <div class="suggestion-container">
+                    <input type="number" id="income" name="income">
+                    <div class="suggestions" id="income-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="idCard">身份证号 (ID Card) - 高度敏感字段</label>
+                <div class="suggestion-container">
+                    <input type="text" id="idCard" name="idCard">
+                    <div class="suggestions" id="idCard-suggestions"></div>
                 </div>
             </div>
             
@@ -487,6 +558,9 @@
                     fullName: '张三',
                     email: 'zhangsan@example.com',
                     phone: '13800138000',
+                    age: 30,
+                    income: 80000,
+                    idCard: '110101199001011234',
                     company: '科技有限公司',
                     title: '软件工程师',
                     address: '北京市朝阳区某某街道123号',
@@ -498,6 +572,9 @@
                     fullName: '李四',
                     email: 'lisi@example.com',
                     phone: '13900139000',
+                    age: 28,
+                    income: 95000,
+                    idCard: '110101198505155678',
                     company: '创新科技',
                     title: '产品经理',
                     address: '上海市浦东新区某某路456号',
@@ -509,6 +586,9 @@
                     fullName: '王五',
                     email: 'wangwu@example.com',
                     phone: '13700137000',
+                    age: 35,
+                    income: 120000,
+                    idCard: '110101199212209012',
                     company: '未来集团',
                     title: '设计师',
                     address: '广州市天河区某某大道789号',
@@ -527,7 +607,7 @@
                 }
             }
             
-            document.getElementById('status-text').textContent = `已填充 ${name} 的测试数据。现在提交表单来训练模型！`;
+            document.getElementById('status-text').textContent = `已填充 ${name} 的测试数据。注意观察不同隐私级别的字段处理方式！`;
         };
         
         // 清空表单

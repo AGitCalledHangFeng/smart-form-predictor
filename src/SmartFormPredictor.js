@@ -268,7 +268,7 @@ export class SmartFormPredictor {
       
       // 更新模型（简化实现）
       const model = this.models.get(fieldName);
-      // 在实际实现中，这里会有更多的训练逻辑
+      // TODO: 在实际实现中，这里会有更多的训练逻辑
     }
   }
   
@@ -315,7 +315,7 @@ export class SmartFormPredictor {
    * @returns {Array} 建议列表
    */
   getSuggestions(field, partialValue) {
-    // 简化实现，实际应该基于模型预测
+    // TODO: 简化实现，实际应该基于模型预测
     const suggestions = [];
     if (this.patterns.has(field)) {
       const fieldPatterns = this.patterns.get(field);
